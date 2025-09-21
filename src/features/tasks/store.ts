@@ -21,29 +21,38 @@ export interface Actions {
   payload: TaskType | TasksCollection | string; // <-- This is the fix
 }
 
-export const TasksReducer = (state = initialState, { type, payload }: Actions): TasksCollection => {
+export const TasksReducer = (
+  state: TasksCollection = initialState,
+  { type, payload }: Actions
+): TasksCollection => {
   switch (type) {
     case ActionKinds.SET_TASKS:
-      // Payload is the full array of tasks from the database
-      return payload;
+      if (Array.isArray(payload)) {
+        return payload;
+      }
+      return state;
 
     case ActionKinds.ADD_NEW_TASK:
-      // Payload is the single new task object returned from Supabase
-      return [...state, payload];
-
-    case ActionKinds.DELETE_TASK:
-      // Payload is the ID of the task to remove
-      return state.filter((task) => task.id !== payload);
+      if (typeof payload === "object" && !Array.isArray(payload)) {
+        return [...state, payload as TaskType];
+      }
+      return state;
 
     case ActionKinds.FINISHED_TASK:
-      // Payload is the updated task object from Supabase
-      return state.map((task) =>
-        task.id === payload.id ? payload : task
-      );
+      if (typeof payload === "object" && !Array.isArray(payload)) {
+        const updatedTask = payload as TaskType;
+        return state.map((task) =>
+          task.id === updatedTask.id ? updatedTask : task
+        );
+      }
+      return state;
 
-    case ActionKinds.ORDER_ITEMS:
-       // Payload is the reordered list (client-side only)
-      return [...payload];
+    case ActionKinds.DELETE_TASK:
+      if (typeof payload === "string") {
+        // FIX: Convert the string payload back to a number for the comparison
+        return state.filter((task) => task.id !== Number(payload));
+      }
+      return state;
 
     default:
       return state;
