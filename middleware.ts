@@ -1,51 +1,36 @@
-//It's a special file in Next.js that runs on every request and will be used to protect your /dashboard route, ensuring only authenticated users can access it.
-
+import { createMiddlewareClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { createServerClient } from "@supabase/ssr";
-
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  });
+  // Create a response object that we can modify
+  const response = NextResponse.next();
 
-  // Grab cookies
-  const cookies = request.cookies;
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  // Create a Supabase client that can be used in the middleware
+  const supabase = createMiddlewareClient(
     {
-      cookies: {
-        get(name: string) {
-          return cookies.get(name)?.value;
-        },
-        set(name: string, value: string, options: any) {
-          response.cookies.set({ name, value, ...options });
-        },
-        remove(name: string, options: any) {
-          response.cookies.set({ name, value: "", ...options });
-        },
-      },
+      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    },
+    {
+      request,
+      response,
     }
   );
 
-  // ✅ Check the session
+  // This will refresh the user's session if it's expired
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
-  const isLoginPage = request.nextUrl.pathname.startsWith("/login");
-  const isDashboard = request.nextUrl.pathname.startsWith("/dashboard");
+  const isLoginPage = request.nextUrl.pathname === "/login";
+  const isDashboardPage = request.nextUrl.pathname.startsWith("/dashboard");
 
-  // 🚀 If not logged in and trying to access /dashboard → redirect to /login
-  if (!session && isDashboard) {
+  // If the user is not logged in and is trying to access a protected route, redirect to login
+  if (!session && isDashboardPage) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // 🚀 If logged in and trying to access /login → redirect to /dashboard
+  // If the user is logged in and is trying to access the login page, redirect to the dashboard
   if (session && isLoginPage) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
@@ -53,11 +38,7 @@ export async function middleware(request: NextRequest) {
   return response;
 }
 
-// Replace your old config with this one for better performance
+// Ensure the middleware is only called for relevant paths.
 export const config = {
-  matcher: [
-    '/',
-    '/login',
-    '/dashboard/:path*', // This covers the dashboard and any future sub-pages
-  ],
+  matcher: ["/login", "/dashboard/:path*"],
 };
