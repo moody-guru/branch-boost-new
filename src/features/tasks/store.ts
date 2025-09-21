@@ -5,6 +5,7 @@
 
 import { TasksCollection, TaskType } from './types';
 
+
 export const initialState: TasksCollection = [];
 
 export enum ActionKinds {
@@ -17,7 +18,7 @@ export enum ActionKinds {
 
 export interface Actions {
   type: ActionKinds;
-  payload: any;
+  payload: TaskType | TasksCollection | string; // <-- This is the fix
 }
 
 export const TasksReducer = (state = initialState, { type, payload }: Actions): TasksCollection => {
