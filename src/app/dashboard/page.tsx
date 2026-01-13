@@ -8,7 +8,6 @@ import { createClient } from "@/lib/supabase/client";
 // Components
 import { TasksWrapper } from "@/features/tasks/components/TasksWrapper";
 import { DailyMotivation } from "@/components/DailyMotivation";
-import { Footer } from "@/components/ui/Footer";
 
 export default function DashboardPage() {
   const supabase = createClient();
