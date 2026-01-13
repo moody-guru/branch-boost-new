@@ -1,82 +1,96 @@
-//will contain the form for adding new tasks. It will be updated to save new tasks to your Supabase tasks table.
-
-//The form is now simplified. It just collects user input and calls a function (handleAddTask) that is passed in from the parent dashboard page.
-
-// src/features/tasks/components/TaskForm.tsx
-
-import React, { useState } from 'react';
-import { TaskType } from '../types';
+import React, { useState } from "react";
+import { TaskType } from "../store";
 
 interface TaskFormProps {
-  // This function will handle the Supabase insert logic
-  handleAddTask: (taskData: Omit<TaskType, 'id' | 'created_at' | 'user_id' | 'startedAt' | 'finishedAt' | 'status'>) => Promise<void>;
+  onAddTask: (task: TaskType) => void;
+  showTaskCreation: boolean;
 }
 
-const initialValue = {
+const initialValueTask: TaskType = {
+  id: "",
+  priority: "low",
+  status: "pending",
   taskName: "",
-  priority: "low" as 'low' | 'medium' | 'high',
+  startedAt: new Date(),
+  finishedAt: undefined,
+  notes: "",
 };
 
-export const TaskForm = ({ handleAddTask }: TaskFormProps) => {
-  const [task, setTask] = useState(initialValue);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+export const TaskForm = ({ onAddTask, showTaskCreation }: TaskFormProps) => {
+  const [task, setTask] = useState<TaskType>(initialValueTask);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setTask({
-      ...task,
-      [e.target.name]: e.target.value
-    });
+  const handleChange = (e: any) => {
+    setTask({ ...task, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!task.taskName || isSubmitting) return;
-
-    setIsSubmitting(true);
-    await handleAddTask(task);
-    setTask(initialValue); // Reset form after submission
-    setIsSubmitting(false);
+    const newTask: TaskType = {
+      ...task,
+      id: crypto.randomUUID(),
+      startedAt: new Date(),
+      status: "pending",
+    };
+    onAddTask(newTask);
+    setTask(initialValueTask);
   };
+
+  if (!showTaskCreation) return null;
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2 className='text-slate-700 font-bold text-lg mb-4'>Create a New Task</h2>
-      <div className="flex flex-col gap-4">
-        <label className='font-semibold text-slate-600' htmlFor="taskName">
-          Task Name
+    <div className="bg-white p-4 md:p-6 rounded-xl shadow-md border border-slate-100 transition-all">
+      <h2 className="text-slate-800 font-bold text-base md:text-lg mb-4">
+        Create a New Task
+      </h2>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <label className="font-semibold text-slate-600 text-xs md:text-sm">
+            Task Name
+          </label>
           <input
             required
             onChange={handleChange}
-            id='taskName'
+            name="taskName"
             type="text"
             value={task.taskName}
-            className='w-full p-2 mt-1 bg-slate-100 rounded-md border border-slate-300'
-            name="taskName"
+            className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-sky-500 transition-all placeholder:text-slate-400"
+            placeholder="e.g. Finish the monthly report"
           />
-        </label>
-
-        <label className='text-slate-600 font-semibold' htmlFor="priority">
-          Priority
-          <select
-            onChange={handleChange}
-            name="priority"
-            id='priority'
-            value={task.priority}
-            className='capitalize w-full p-2 mt-1 bg-slate-100 rounded-md border border-slate-300'
-          >
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-          </select>
-        </label>
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-slate-600 font-semibold text-xs md:text-sm">
+            Priority
+          </label>
+          <div className="relative">
+            <select
+              onChange={handleChange}
+              name="priority"
+              value={task.priority}
+              className="capitalize w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-sky-500 cursor-pointer appearance-none"
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+            {/* Custom arrow icon to make it look cleaner than default dropdown arrow */}
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+              <svg
+                className="fill-current h-4 w-4"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+              >
+                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+              </svg>
+            </div>
+          </div>
+        </div>
         <button
           type="submit"
-          disabled={isSubmitting}
-          className='w-full bg-sky-500 py-2 text-slate-50 font-semibold rounded-md cursor-pointer hover:bg-sky-600 duration-200 disabled:bg-slate-400'
+          className="w-full mt-2 bg-sky-500 py-2 text-white font-bold rounded-lg hover:bg-sky-600 transition-colors shadow-sm text-sm"
         >
-          {isSubmitting ? 'Adding...' : 'Add Task'}
+          Add Task
         </button>
-      </div>
-    </form>
+      </form>
+    </div>
   );
 };

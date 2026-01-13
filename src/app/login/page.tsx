@@ -1,3 +1,5 @@
+//D:\4_web_boot\branch_boost\branch-boost-new\src\app\login\page.tsx
+
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
@@ -44,8 +46,7 @@ export default function LoginPage() {
       className="relative w-full min-h-[90vh] flex items-center justify-center p-4 bg-cover bg-center"
       style={{ backgroundImage: "url('/background.jpg')" }}
     >
-      {/* Semi-transparent overlay for readability */}
-      <div className="absolute inset-0 bg-slate-900 bg-opacity-50 backdrop-blur-sm"></div>
+     
 
       {/* Login card - sits on top of the overlay */}
       <div className="relative z-10 w-full max-w-4xl bg-white/90 rounded-2xl shadow-2xl grid grid-cols-1 md:grid-cols-2 overflow-hidden backdrop-blur-lg border border-white/20">

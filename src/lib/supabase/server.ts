@@ -1,20 +1,90 @@
+// import { cookies } from "next/headers";
+
+// export const createServerClient = () => {
+//   const cookieStore = cookies(); // ✅ no await here
+
+//   return {
+//     cookies: {
+//       get(name: string) {
+//         return cookieStore.get(name)?.value;
+//       },
+//       set(name: string, value: string, options: CookieOptions) {
+//         try {
+//           // implement your set logic if needed
+//         } catch (error) {
+//           console.error("Cookie set error:", error);
+//         }
+//       },
+//     },
+//   };
+// };
+
+// import { createServerClient, type CookieOptions } from "@supabase/ssr";
+// import { cookies } from "next/headers";
+
+// export async function createClient() {
+//   const cookieStore = await cookies(); // In Next.js 15, we must await this!
+
+//   return createServerClient(
+//     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+//     {
+//       cookies: {
+//         get(name: string) {
+//           return cookieStore.get(name)?.value;
+//         },
+//         set(name: string, value: string, options: CookieOptions) {
+//           try {
+//             cookieStore.set({ name, value, ...options });
+//           } catch (error) {
+//             // The `set` method was called from a Server Component.
+//             // This can be ignored if you have middleware refreshing user sessions.
+//           }
+//         },
+//         remove(name: string, options: CookieOptions) {
+//           try {
+//             cookieStore.set({ name, value: "", ...options });
+//           } catch (error) {
+//             // The `delete` method was called from a Server Component.
+//             // This can be ignored.
+//           }
+//         },
+//       },
+//     }
+//   );
+// }
+
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-export const createServerClient = () => {
-  const cookieStore = cookies(); // ✅ no await here
+export async function createClient() {
+  const cookieStore = await cookies();
 
-  return {
-    cookies: {
-      get(name: string) {
-        return cookieStore.get(name)?.value;
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value, ...options });
+          } catch (error) {
+            // The `set` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing user sessions.
+          }
+        },
+        remove(name: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value: "", ...options });
+          } catch (error) {
+            // The `delete` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing user sessions.
+          }
+        },
       },
-      set(name: string, value: string, options: CookieOptions) {
-        try {
-          // implement your set logic if needed
-        } catch (error) {
-          console.error("Cookie set error:", error);
-        }
-      },
-    },
-  };
-};
+    }
+  );
+}

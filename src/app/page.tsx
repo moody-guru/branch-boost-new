@@ -1,103 +1,169 @@
-import Image from "next/image";
+// "use client";
 
-export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+// import React, { useEffect, useReducer } from "react";
+// import { createClient } from "@/lib/supabase/client";
+// import {
+//   TasksReducer,
+//   ActionKinds,
+//   initialState,
+// } from "@/features/tasks/store";
+// import {
+//   TasksWrapper,
+//   TaskHandlers,
+// } from "@/features/tasks/components/TasksWrapper";
+// import { TaskForm } from "@/features/tasks/components/TaskForm";
+// import { TaskType } from "@/features/tasks/types";
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+// export default function DashboardPage() {
+//   const supabase = createClient();
+//   const [tasks, dispatch] = useReducer(TasksReducer, initialState);
+
+//   // 1. FETCH TASKS ON LOAD
+//   useEffect(() => {
+//     const fetchTasks = async () => {
+//       const { data, error } = await supabase
+//         .from("tasks")
+//         .select("*")
+//         .order("created_at", { ascending: false }); // Newest first
+
+//       if (error) {
+//         console.error("Error fetching tasks:", error);
+//       } else if (data) {
+//         // We cast the data to match your TaskType interface
+//         dispatch({ type: ActionKinds.SET_TASKS, payload: data as any });
+//       }
+//     };
+
+//     fetchTasks();
+//   }, []);
+
+//   // 2. DEFINE HANDLERS (The "Smart" Logic)
+
+//   // Add Task Handler
+//   const handleAddTask = async (
+//     taskData: Omit<
+//       TaskType,
+//       "id" | "created_at" | "user_id" | "startedAt" | "finishedAt" | "status"
+//     >
+//   ) => {
+//     // Prepare object for Supabase
+//     const newTaskPayload = {
+//       taskName: taskData.taskName,
+//       priority: taskData.priority,
+//       status: "pending",
+//       startedAt: new Date().toISOString(),
+//       finishedAt: null,
+//     };
+
+//     const { data, error } = await supabase
+//       .from("tasks")
+//       .insert(newTaskPayload)
+//       .select()
+//       .single();
+
+//     if (error) {
+//       console.error("Error adding task:", error);
+//       alert("Failed to add task. See console for details.");
+//     } else if (data) {
+//       // Update local state immediately so user sees it
+//       dispatch({ type: ActionKinds.ADD_NEW_TASK, payload: data });
+//     }
+//   };
+
+//   // Finish Task Handler
+//   const finishTask = async (id: number) => {
+//     const finishedAt = new Date().toISOString();
+
+//     const { error } = await supabase
+//       .from("tasks")
+//       .update({ status: "finished", finishedAt: finishedAt })
+//       .eq("id", id);
+
+//     if (error) {
+//       console.error("Error finishing task:", error);
+//     } else {
+//       // Find the task in local state to update it correctly in reducer
+//       const taskToUpdate = tasks.find((t) => t.id === id);
+//       if (taskToUpdate) {
+//         const updatedTask = { ...taskToUpdate, status: "finished", finishedAt };
+//         dispatch({
+//           type: ActionKinds.FINISHED_TASK,
+//           payload: updatedTask as any,
+//         });
+//       }
+//     }
+//   };
+
+//   // Delete Task Handler
+//   const deleteTask = async (id: number) => {
+//     const { error } = await supabase.from("tasks").delete().eq("id", id);
+
+//     if (error) {
+//       console.error("Error deleting task:", error);
+//     } else {
+//       dispatch({ type: ActionKinds.DELETE_TASK, payload: id.toString() });
+//     }
+//   };
+
+//   // Bundle handlers to pass to TasksWrapper
+//   const taskHandlers: TaskHandlers = {
+//     finishTask,
+//     deleteTask,
+//   };
+
+//   // 3. RENDER THE DASHBOARD
+//   return (
+//     <main className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 font-sans">
+//       <div className="max-w-4xl mx-auto space-y-8">
+//         {/* Header Section */}
+//         <div className="text-center">
+//           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight sm:text-4xl">
+//             BranchBoost <span className="text-sky-500">Dashboard</span>
+//           </h1>
+//           <p className="mt-2 text-lg text-slate-600">
+//             Manage your engineering tasks efficiently.
+//           </p>
+//         </div>
+
+//         {/* Form Section */}
+//         <div className="bg-white p-6 rounded-lg shadow-md border border-slate-100">
+//           <TaskForm handleAddTask={handleAddTask} />
+//         </div>
+
+//         {/* Tasks List Section */}
+//         <TasksWrapper
+//           tasks={tasks}
+//           dispatch={dispatch}
+//           taskHandlers={taskHandlers}
+//         />
+//       </div>
+//     </main>
+//   );
+// }
+
+
+//src\app\page.tsx
+
+//Is this person logged in? If yes, go to Dashboard. If no, go to Login.
+
+//Server-Side Redirect.
+
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+
+export default async function Home() {
+  const supabase = await createClient();
+
+  // Check if user is logged in
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    // If logged in, send to the GOOD dashboard
+    redirect("/dashboard");
+  } else {
+    // If NOT logged in, send to Login
+    redirect("/login");
+  }
 }

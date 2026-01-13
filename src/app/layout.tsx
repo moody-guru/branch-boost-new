@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css"; // <-- This line loads all your Tailwind styles
+import "./globals.css";
 import { Footer } from "@/components/ui/Footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "BranchBoost",
-  description: "Task Manager with Recommendation for Engineering Students",
+  title: "BranchBoost Dashboard",
+  description: "Manage your engineering tasks efficiently.",
 };
 
 export default function RootLayout({
@@ -17,8 +17,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} flex flex-col min-h-screen`}>
-        {children}
+      <body
+        className={`${inter.className} bg-slate-50 min-h-screen flex flex-col`}
+      >
+        {/* Main Content Area - Grows to fill space */}
+        <div className="flex-grow">{children}</div>
+
+        {/* Footer - Always sticks to bottom because of flex-col & flex-grow above */}
         <Footer />
       </body>
     </html>
