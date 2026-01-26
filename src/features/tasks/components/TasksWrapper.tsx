@@ -4,7 +4,7 @@ import {
   closestCenter,
   KeyboardSensor,
   PointerSensor,
-  TouchSensor, // Import TouchSensor
+  TouchSensor,
   useSensor,
   useSensors,
   DragEndEvent,
@@ -49,13 +49,12 @@ export const TasksWrapper = () => {
     notes: string;
   } | null>(null);
 
-  // --- FIX: BETTER MOBILE SENSORS ---
+  // --- MOBILE SENSORS ---
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: { distance: 8 }, // Good for mouse
+      activationConstraint: { distance: 8 },
     }),
     useSensor(TouchSensor, {
-      // Press and hold for 250ms to pick up (prevents accidental drags while scrolling)
       activationConstraint: { delay: 250, tolerance: 5 },
     }),
     useSensor(KeyboardSensor, {
@@ -71,6 +70,7 @@ export const TasksWrapper = () => {
         .from("tasks")
         .select("*")
         .order("created_at", { ascending: false });
+
       if (data) {
         const mappedTasks: TasksCollection = data.map((t: any) => ({
           id: t.id,
@@ -100,16 +100,16 @@ export const TasksWrapper = () => {
       return;
     }
 
-    // 2. Add user_id to the data we send to Supabase
+    // 2. Add to Supabase
     const { data, error } = await supabase
       .from("tasks")
       .insert([
         {
-          title: task.taskName, // Ensure this matches your DB column name
+          task_name: task.taskName,
           priority: task.priority,
           status: task.status,
           started_at: task.startedAt,
-          user_id: user.id, // <--- THIS IS THE KEY FIX
+          user_id: user.id,
         },
       ])
       .select();
@@ -117,7 +117,25 @@ export const TasksWrapper = () => {
     if (error) {
       console.error("Error adding task:", error);
     } else {
-      // Update local state...
+      // 3. UPDATE LOCAL STATE (FIXED: Uses ADD_NEW_TASK now)
+      if (data && data.length > 0) {
+        const newTaskFromDB = data[0];
+
+        const newTaskForUI: TaskType = {
+          id: newTaskFromDB.id,
+          taskName: newTaskFromDB.task_name,
+          priority: newTaskFromDB.priority,
+          status: newTaskFromDB.status,
+          startedAt: newTaskFromDB.started_at,
+          finishedAt: newTaskFromDB.finished_at,
+          notes: newTaskFromDB.notes || "",
+        };
+
+        // This line is now corrected to match your Store file:
+        dispatch({ type: ActionKinds.ADD_NEW_TASK, payload: newTaskForUI });
+
+        setShowTaskCreation(false);
+      }
     }
   };
 
