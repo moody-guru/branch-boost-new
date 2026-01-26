@@ -60,7 +60,7 @@ export const TasksWrapper = () => {
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   // --- FETCH DATA ---
@@ -89,17 +89,36 @@ export const TasksWrapper = () => {
   }, []);
 
   // --- HANDLERS ---
-  const handleAddTask = async (newTask: TaskType) => {
-    dispatch({ type: ActionKinds.ADD_NEW_TASK, payload: newTask });
-    setShowTaskCreation(false);
-    await supabase.from("tasks").insert({
-      id: newTask.id,
-      task_name: newTask.taskName,
-      priority: newTask.priority,
-      status: newTask.status,
-      started_at: newTask.startedAt,
-      notes: newTask.notes,
-    });
+  const handleAddTask = async (task: TaskType) => {
+    // 1. Get the current logged-in user
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      alert("You must be logged in to create a task");
+      return;
+    }
+
+    // 2. Add user_id to the data we send to Supabase
+    const { data, error } = await supabase
+      .from("tasks")
+      .insert([
+        {
+          title: task.taskName, // Ensure this matches your DB column name
+          priority: task.priority,
+          status: task.status,
+          started_at: task.startedAt,
+          user_id: user.id, // <--- THIS IS THE KEY FIX
+        },
+      ])
+      .select();
+
+    if (error) {
+      console.error("Error adding task:", error);
+    } else {
+      // Update local state...
+    }
   };
 
   const finishTask = async (status: string, id: string) => {
@@ -134,7 +153,7 @@ export const TasksWrapper = () => {
   const reorder = (
     list: TasksCollection,
     startIndex: number,
-    endIndex: number
+    endIndex: number,
   ) => {
     return arrayMove(list, startIndex, endIndex);
   };
